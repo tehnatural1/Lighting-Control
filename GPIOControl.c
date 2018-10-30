@@ -1,34 +1,10 @@
-#define BCM2708_PERI_BASE 0x3F000000
-#define GPIO_BASE         (BCM2708_PERI_BASE + 0x200000) /* GPIO controller */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
-
-#define BLOCK_SIZE (4*1024)
-
-int  mem_fd;
-void *gpio_map;
-
-// I/O access
-volatile unsigned *gpio;
-
-
-// GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x) or SET_GPIO_ALT(x,y)
-#define INP_GPIO(g) *(gpio+((g)/10)) &= ~(7<<(((g)%10)*3))
-#define OUT_GPIO(g) *(gpio+((g)/10)) |=  (1<<(((g)%10)*3))
-
-#define GPIO_SET *(gpio+7)  // sets   bits which are 1 ignores bits which are 0
-#define GPIO_CLR *(gpio+10) // clears bits which are 1 ignores bits which are 0
-
-#define GET_GPIO(g) (*(gpio+13)&(1<<g)) // 0 if LOW, (1<<g) if HIGH
-
-
-void setup_io();
+#include "GPIOControl.h"
 
 int main(int argc, char **argv)
 {
@@ -57,12 +33,12 @@ int main(int argc, char **argv)
   {
      for (g=7; g<=11; g++)
      {
-       GPIO_SET = 1<<g;
+       SET_GPIO = 1<<g;
        sleep(1);
      }
      for (g=7; g<=11; g++)
      {
-       GPIO_CLR = 1<<g;
+       CLR_GPIO = 1<<g;
        sleep(1);
      }
   }
