@@ -13,15 +13,6 @@ int main(int argc, char **argv)
   // Set up gpi pointer for direct register access
   setup_io();
 
-  // Switch GPIO 7..11 to output mode
-
- /************************************************************************\
-  * You are about to change the GPIO settings of your computer.          *
-  * Mess this up and it will stop working!                               *
-  * It might be a good idea to 'sync' before running this program        *
-  * so at least you still have your code changes written to the SD-card! *
- \************************************************************************/
-
   // Set GPIO pins 7-11 to output
   for (g=7; g<=11; g++)
   {
@@ -81,5 +72,31 @@ void setup_io()
 }
 
 
+/* 
+ * INFO:
+ * Toggles the input and output of a specific GPIO
+ * by checking the current state of the GPIO
+ *
+ * PARAMETERS:
+ * in_gpio
+ * [in] Specifies the GPIO to toggle 
+ * 
+ */
+void toggle_gpio(int in_gpio)
+{
+  /* Set the GPIO to output */
+  INP_GPIO(in_gpio);
+  OUT_GPIO(in_gpio);
+
+  /* Check the GPIO current state and alternate it */
+  if (GET_GPIO(in_gpio) > 0)
+  {
+    CLR_GPIO = 1 << in_gpio;
+  }
+  else
+  {
+    SET_GPIO = 1 << in_gpio;
+  }
+}
 
 

@@ -25,6 +25,9 @@ void *gpio_map;
 /* sets up the gpio_map */
 void setup_io();
 
+/* Alternates a GPIO's state */
+void toggle_gpio(int);
+
 /* I/O Access */
 volatile unsigned *gpio;
 
