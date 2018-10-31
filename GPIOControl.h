@@ -16,6 +16,9 @@
 /* clears bits which are 1 and ignores bits which are 0 */
 #define CLR_GPIO *(gpio + 10)
 
+/* The port communications will be accepted on */
+#define PORT_NUMBER 9090
+
 /* used for opening '/dev/mem' */
 int mem_fd;
 
