@@ -9,7 +9,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 #include <sys/mman.h>
 #include <sys/socket.h>
 
@@ -200,10 +199,12 @@ init(void)
 
   pthread_t thread_id;
 
-  while client_sock = accept(
-    sock_desc,
-    (struct sockaddr *)&client,
-    (socklen_t*)&c
+  while (
+    client_sock = accept(
+      sock_desc,
+      (struct sockaddr *)&client,
+      (socklen_t*)&c
+    )
   )
   {
 
@@ -263,12 +264,19 @@ log_to_file(char *mess_desc, char *mess_item)
     mess_item
   );
 
+  printf(
+    "[%s]: %s: %s\n",
+    s,
+    mess_desc,
+    mess_item
+  );
+
   fclose(log_file);
 
-  memset(s, 0, sizeof(s));
+  //memset(s, 0, sizeof(s));
 
   // Clear memory
-  free(s)
+  //free(s);
 
 }
 
@@ -288,20 +296,22 @@ void
   // get socket descriptor
   int sock = *(int*)sock_desc;
   int msg_size;
-  char *message, client_message[2];
+  char *client_message = 0;
+
+  client_message = malloc (20);
 
   // Recieve message from a client
   while (
     msg_size = recv(
       sock,
       client_message,
-      2,
+      20,
       0
     ) > 0)
   {
 
     // End of string marker
-    client_message[msg_size] = '\0';
+    //client_message[msg_size] = '\0';
 
     // Update log
     log_to_file(
@@ -309,64 +319,90 @@ void
       client_message
     );
 
-    /**/ if (strcmp(client_message, "4") == 0)
+    /**/ if (strcmp(client_message, "Patio") == 0)
     {
       toggle_gpio(PATIO);
     }
-    else if (strcmp(client_message, "5") == 0)
+    else if (strcmp(client_message, "Stairway") == 0)
     {
       toggle_gpio(STAIRWAY);
     }
-    else if (strcmp(client_message, "6") == 0)
+    else if (strcmp(client_message, "Living Room") == 0)
     {
       toggle_gpio(LIVINGROOM);
     }
-    else if (strcmp(client_message, "7") == 0)
+    else if (strcmp(client_message, "Hallway") == 0)
     {
       toggle_gpio(HALLWAY);
     }
-    else if (strcmp(client_message, "27") == 0)
+    else if (strcmp(client_message, "Tablet Input") == 0)
     {
-      toggle_christmas_lights();
+      printf("attempting to connect to remote device");
+      int status = system("adb connect 192.168.1.72:5555");
+      int second = system("adb -s 192.168.1.72:5555 shell \"su -c 'echo 0 > /sys/class/sec/tsp/input/enabled && echo 0 > /sys/class/sec/sec_touchkey/input/enabled'\"");
+      //toggle_christmas_lights();
+    }
+    else if (strcmp(client_message, "WhoYouBe") == 0)
+    {
+      send(sock, "butter", strlen("butter"), 0);
+    }
+    else if (strcmp(client_message, "getButtons") == 0)
+    {
+      char * buffer = 0;
+      FILE * f = fopen ("buttons.json", "rb");
+      long length;
+
+      if (f)
+      {
+        fseek (f, 0, SEEK_END);
+        length = ftell (f);
+        fseek (f, 0, SEEK_SET);
+        buffer = malloc (length);
+
+        if (buffer)
+        {
+          fread (buffer, 1, length, f);
+        }
+        fclose (f);
+      }
+
+      if (buffer)
+      {
+        //printf("responding: %s\n", buffer);
+
+        //send(sock, buffer, strlen(buffer), 0);
+
+        if (send_all(sock, buffer, strlen(buffer)) < 0) {
+          printf("error");
+        }
+
+        printf("finished responding!\n");
+
+        free(buffer);
+
+      }
     }
 
-    // Zero memory
-    memset(client_message, 0, 2);
-
-    // Clear memory
-    free(client_message)
+    // Disables further send and receive operations.
+    shutdown(sock, SHUT_RDWR);
 
   }
 
-  /**/ if (msg_size == 0)
+  if (msg_size == 0)
   {
+      struct sockaddr_in addr;
+      socklen_t addr_len = sizeof(addr);
+      int err = getpeername(
+        sock,
+        (struct sockaddr *)&addr,
+        &addr_len
+      );
 
-    struct sockaddr_in addr;
-    socklen_t addr_len = sizeof(addr);
-    int err = getpeername(
-      sock,
-      (struct sockaddr *)&addr,
-      &addr_len
-    );
-
-
-    if (err != 0)
-    {
-      // error
-    }
-
-    // Log IP of client disconnection
-    log_to_file(
-      "Client disconnected",
-      inet_ntoa(addr.sin_addr)
-    );
-
-
-    fflush(stdout);
-
-    free(addr)
-    free(addr_len)
-    free(err)
+      // Log IP of client disconnection
+      log_to_file(
+        "Client disconnected",
+        inet_ntoa(addr.sin_addr)
+      );
 
   }
   else if (msg_size == -1)
@@ -374,13 +410,23 @@ void
     perror ("recv failed.");
   }
 
-
-  // Free Memory
-  free(message)
-  free(sock)
-  free(msg_size)
+  free(client_message);
 
   return 0;
+}
+
+
+int send_all(int socket, void *buffer, size_t length)
+{
+    char *ptr = (char*) buffer;
+    while (length > 0)
+    {
+        int i = send(socket, ptr, length, 0);
+        if (i < 1) return -1;
+        ptr += i;
+        length -= i;
+    }
+    return 0;
 }
 
 
@@ -437,8 +483,8 @@ toggle_christmas_lights()
   close(sock);
 
   // Clear memory
-  free(sock);
-  free(xmas_pi);
+  //free(sock);
+  //free(xmas_pi);
 
   return 0;
 }

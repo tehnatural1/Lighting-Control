@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#458588</color>
+    <color name="colorPrimaryDark">#1d2021</color>
+    <color name="colorAccent">#458588</color>
+    <color name="dark_icon_half_alpha">#d65d0e</color>
+    <color name="dark_icon">#d65d0e</color>
+</resources>

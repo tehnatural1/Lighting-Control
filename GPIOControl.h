@@ -56,6 +56,8 @@ void *gpio_map;
 /* I/O access */
 volatile unsigned *gpio;
 
+int send_all(int, void *, size_t);
+
 void log_to_file(char *, char *);
 
 FILE *log_file;
