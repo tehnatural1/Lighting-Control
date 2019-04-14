@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">HMCLights2</string>
+
+    <string name="change_city">Change city</string>
+    <string name="Item_1">Item 1</string>
+    <string name="Item_2">Item 2</string>
+
+    <string name="weather_sunny">&#xf00d;</string>
+    <string name="weather_clear_night">&#xf02e;</string>
+
+    <string name="weather_foggy">&#xf014;</string>
+    <string name="weather_cloudy">&#xf013;</string>
+    <string name="weather_rainy">&#xf019;</string>
+    <string name="weather_snowy">&#xf01b;</string>
+    <string name="weather_thunder">&#xf01e;</string>
+    <string name="weather_drizzle">&#xf01c;</string>
+
+    <string name="weather_wind">&#xf050;</string>
+    <string name="weather_low">&#xf053;</string>
+    <string name="weather_high">&#xf055;</string>
+
+    <string name="place_not_found">No weather data found.</string>
+    <string name="title_activity_weather_fragment">WeatherFragment</string>
 </resources>

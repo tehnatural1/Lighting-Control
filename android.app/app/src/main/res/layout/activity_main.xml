@@ -1,53 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/base_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?colorPrimaryDark"
-    android:orientation="vertical">
+    android:orientation="vertical" >
 
-    <LinearLayout
-        android:id="@+id/container"
+    <!--android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/txtStatus"
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textAllCaps="false"
-            android:textColor="#ebdbb2"
-            android:textSize="18sp"
-            android:alpha="0"
-            android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse"
-            tools:alpha="1"/>
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" />
 
-        <Space
-            android:id="@+id/space1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+    </android.support.design.widget.AppBarLayout-->
 
-        <ProgressBar
-            android:id="@+id/progressBar1"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+    <TextView
+        android:id="@+id/txtStatus"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|top"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse"
+        android:textColor="#ebdbb2"
+        android:textSize="18sp"
+        android:alpha="0"
+        tools:alpha="1"/>
 
-        <Space
-            android:id="@+id/space2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+    <include layout="@layout/weather_info"/>
 
-    </LinearLayout>
+    <include layout="@layout/button_container"/>
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/city"
+        android:alpha="0"
+        tools:alpha="1"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:gravity="bottom"
+        android:textAlignment="center"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/font_color" />
+
+</LinearLayout>
