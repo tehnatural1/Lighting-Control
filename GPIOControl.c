@@ -1,24 +1,26 @@
-
 #include <stdio.h>
 
 // Register access
 #include <fcntl.h>
 
-
 // String functions
 #include <string.h>
+
+// System call, atoi conversion
 #include <stdlib.h>
+
+// isdigit call
+#include <ctype.h>
 
 #include <sys/mman.h>
 #include <sys/socket.h>
 
 // Internet
 #include <arpa/inet.h>
-#include <unistd.h>     //write
+#include <unistd.h>     //write, usleep
 
 // For threading requests (lpthread)
 #include <pthread.h>
-
 
 // Used to get local IP address
 #include <sys/types.h>
@@ -43,17 +45,6 @@ main()
 }
 
 
-/*
- * INFO:
- * Toggles the input and output of a specified GPIO
- * by checking if the GPIO is currently outputting
- * any voltage.
- *
- * PARAMETERS:
- * g:
- * Specifies the GPIO to toggle.
- *
- */
 void
 toggle_gpio(int g)
 {
@@ -73,12 +64,6 @@ toggle_gpio(int g)
 }
 
 
-
-/*
- * INFO:
- * Set up a memory regions to access GPIO directly
- *
- */
 void
 setup_io()
 {
@@ -108,31 +93,19 @@ setup_io()
 
   if (gpio_map == MAP_FAILED)
   {
-    printf (
-      "mmap error %d\n",
-      (int)gpio_map
-    );
-
+    printf("mmap error %d\n", (int) gpio_map);
     exit(-1);
   }
 
   // Using a volatile pointer
-  gpio = (volatile unsigned *)gpio_map;
+  gpio = (volatile unsigned *) gpio_map;
 
 }
 
 
-/*
- * INFO:
- * Initialize a socket to accept incoming connections
- * then trigger gpio events based on the message sent via
- * the connection
- *
- */
 int
 init(void)
 {
-
   int sock_desc, client_sock, c;
 
   struct sockaddr_in server, client;
@@ -140,23 +113,18 @@ init(void)
 
 
   // Create a socket
-  sock_desc = socket(
-    AF_INET,
-    SOCK_STREAM,
-    0
-  );
+  sock_desc = socket(AF_INET, SOCK_STREAM, 0);
 
   // Prepare the socket structure
   server.sin_family = AF_INET;
   server.sin_addr.s_addr = INADDR_ANY;
   server.sin_port = htons(MESSAGE_PORT);
 
-
   // Bind socket descriptor
   if (
     bind(
       sock_desc,
-      (struct sockaddr *)&server,
+      (struct sockaddr *) & server,
       sizeof(server)
     ) < 0)
   {
@@ -166,33 +134,21 @@ init(void)
 
   listen(sock_desc, 3);
 
-
   // Type of address to retrieve - IPv4 IP address
   ifr.ifr_addr.sa_family = AF_INET;
 
   // Copy the interface name in the ifreq structure
-  strncpy(
-    ifr.ifr_name,
-    "wlan0",
-    IFNAMSIZ - 1
-  );
+  strncpy(ifr.ifr_name, "wlan0", IFNAMSIZ - 1);
 
-  ioctl(
-    sock_desc,
-    SIOCGIFADDR,
-    &ifr
-  );
-
+  ioctl(sock_desc, SIOCGIFADDR, &ifr);
 
   // Displaying Server IP and Port
   printf (
     "\nLighting Server Setup - %s : %d\n",
-    inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),
+    inet_ntoa(((struct sockaddr_in *) & ifr.ifr_addr) -> sin_addr),
     MESSAGE_PORT
   );
 
-
-  printf("Waiting for connections\n");
 
   // Accept an incoming connection
   c = sizeof(struct sockaddr_in);
@@ -202,18 +158,14 @@ init(void)
   while (
     client_sock = accept(
       sock_desc,
-      (struct sockaddr *)&client,
-      (socklen_t*)&c
+      (struct sockaddr *) & client,
+      (socklen_t *) & c
     )
   )
   {
 
     // Logging IP of client connection
-    log_to_file(
-      "Client connected",
-      inet_ntoa(client.sin_addr)
-    );
-
+    log_to_file("Client connected",inet_ntoa(client.sin_addr));
 
     // Create a thread to handle connection
     if (
@@ -221,7 +173,7 @@ init(void)
         &thread_id,
         NULL,
         new_conn,
-        (void*)&client_sock
+        (void *) & client_sock
       ) < 0)
     {
       perror ("Failed to create a new thread.");
@@ -237,186 +189,174 @@ init(void)
   }
 
   return 0;
-
 }
 
 
 void
-log_to_file(char *mess_desc, char *mess_item)
+log_to_file(char * tag, char * msg)
 {
-
-  char s[26];
-  struct tm* tm_info;
+  char * s = 0;
+  struct tm * tm_info;
+  int date_size = 26;
 
   log_file = fopen("x.log", "a+");
-  time(&t);
+  time(& t);
+  tm_info = localtime(& t);
+  s = malloc (date_size);
 
-  tm_info = localtime(&t);
+  strftime(s, date_size, "%Y-%m-%d %H:%M:%S", tm_info);
 
-  strftime(s, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+  // Write to log file
+  fprintf(log_file, "[%s]: %s: %s\n", s, tag, msg);
 
-  // Writing log
-  fprintf(
-    log_file,
-    "[%s]: %s: %s\n",
-    s,
-    mess_desc,
-    mess_item
-  );
-
-  printf(
-    "[%s]: %s: %s\n",
-    s,
-    mess_desc,
-    mess_item
-  );
+  // Write to console
+  printf("[%s]: %s: %s\n", s, tag, msg);
 
   fclose(log_file);
 
-  //memset(s, 0, sizeof(s));
-
   // Clear memory
-  //free(s);
-
+  free(s);
 }
 
 
-
-/*
- * INFO:
- * Handles each client connection and depending on the message
- * recieved over the websocket the corresponding GPIO on the
- * raspberry pi is triggered
- *
- */
 void
-*new_conn(void *sock_desc)
+*new_conn(void * sock_desc)
 {
-
   // get socket descriptor
-  int sock = *(int*)sock_desc;
+  int sock = * (int *) sock_desc;
   int msg_size;
-  char *client_message = 0;
+  char * msg = 0;
 
-  client_message = malloc (20);
+  msg = malloc (20);
 
   // Recieve message from a client
-  while (
-    msg_size = recv(
-      sock,
-      client_message,
-      20,
-      0
-    ) > 0)
+  recv(sock, msg, 20, 0);
+
+  // Update log
+  log_to_file("Recieved client request", msg);
+
+  /**/ if (is_number(msg))
   {
-
-    // End of string marker
-    //client_message[msg_size] = '\0';
-
-    // Update log
-    log_to_file(
-      "Recieved client message",
-      client_message
-    );
-
-    /**/ if (strcmp(client_message, "Patio") == 0)
-    {
-      toggle_gpio(PATIO);
-    }
-    else if (strcmp(client_message, "Stairway") == 0)
-    {
-      toggle_gpio(STAIRWAY);
-    }
-    else if (strcmp(client_message, "Living Room") == 0)
-    {
-      toggle_gpio(LIVINGROOM);
-    }
-    else if (strcmp(client_message, "Hallway") == 0)
-    {
-      toggle_gpio(HALLWAY);
-    }
-    else if (strcmp(client_message, "Tablet Input") == 0)
-    {
-      printf("attempting to connect to remote device");
-      int status = system("adb connect 192.168.1.72:5555");
-      int second = system("adb -s 192.168.1.72:5555 shell \"su -c 'echo 0 > /sys/class/sec/tsp/input/enabled && echo 0 > /sys/class/sec/sec_touchkey/input/enabled'\"");
-      //toggle_christmas_lights();
-    }
-    else if (strcmp(client_message, "WhoYouBe") == 0)
-    {
-      send(sock, "butter", strlen("butter"), 0);
-    }
-    else if (strcmp(client_message, "getButtons") == 0)
-    {
-      char * buffer = 0;
-      FILE * f = fopen ("buttons.json", "rb");
-      long length;
-
-      if (f)
-      {
-        fseek (f, 0, SEEK_END);
-        length = ftell (f);
-        fseek (f, 0, SEEK_SET);
-        buffer = malloc (length);
-
-        if (buffer)
-        {
-          fread (buffer, 1, length, f);
-        }
-        fclose (f);
-      }
-
-      if (buffer)
-      {
-        //printf("responding: %s\n", buffer);
-
-        //send(sock, buffer, strlen(buffer), 0);
-
-        if (send_all(sock, buffer, strlen(buffer)) < 0) {
-          printf("error");
-        }
-
-        printf("finished responding!\n");
-
-        free(buffer);
-
-      }
-    }
-
-    // Disables further send and receive operations.
-    shutdown(sock, SHUT_RDWR);
-
+    log_to_file("Response", "Toggling GPIO");
+    toggle_gpio(atoi(msg));
+    send(sock, MSG_ACK, strlen(MSG_ACK), 0);
+  }
+  else if (strcmp(msg, MSG_TABLET) == 0)
+  {
+    log_to_file("Response", "Altering Tablet Input");
+    disable_tablet_input();
+    send(sock, MSG_ACK, strlen(MSG_ACK), 0);
+  }
+  else if (strcmp(msg, MSG_ALIVE_CHK) == 0)
+  {
+    log_to_file("Response", "Sending Verify");
+    send(sock, MSG_ALIVE_RESP, strlen(MSG_ALIVE_RESP), 0);
+  }
+  else if (strcmp(msg, MSG_BTN_LAYOUT) == 0)
+  {
+    log_to_file("Response", "Sending layout");
+    send_json(sock);
   }
 
-  if (msg_size == 0)
+  log_to_file("Socket", "Closing connection");
+  shutdown(sock, SHUT_RDWR);
+  close(sock);
+
+  free(msg);
+  pthread_exit(NULL);
+}
+
+
+int
+is_number(char * s)
+{
+  for (int i = 0; i < strlen(s); i++)
   {
-      struct sockaddr_in addr;
-      socklen_t addr_len = sizeof(addr);
-      int err = getpeername(
-        sock,
-        (struct sockaddr *)&addr,
-        &addr_len
-      );
-
-      // Log IP of client disconnection
-      log_to_file(
-        "Client disconnected",
-        inet_ntoa(addr.sin_addr)
-      );
-
+    if (!isdigit(s[i]))
+    {
+      return 0;
+    }
   }
-  else if (msg_size == -1)
+  return 1;
+}
+
+
+int
+send_json(int sock)
+{
+  char * buffer = 0;
+  FILE * f = fopen ("buttons.json", "rb");
+  long length;
+
+  if (f)
   {
-    perror ("recv failed.");
+    fseek (f, 0, SEEK_END);
+    length = ftell (f);
+    fseek (f, 0, SEEK_SET);
+    buffer = malloc (length);
+
+    if (buffer)
+    {
+      fread (buffer, 1, length, f);
+    }
+    fclose (f);
   }
 
-  free(client_message);
+  if (buffer)
+  {
+    if (send_all(sock, buffer, strlen(buffer)) < 0) {
+      printf("Error sending JSON");
+    }
+
+    free(buffer);
+  }
 
   return 0;
 }
 
 
-int send_all(int socket, void *buffer, size_t length)
+int
+disable_tablet_input()
+{
+  int connect = system("adb connect 192.168.1.72:5555");
+  int attempts = 0;
+  int disconnect;
+  int input_toggle;
+
+  while (
+    input_toggle = system(
+      "adb -s 192.168.1.72:5555 shell \"su -c '"
+      "sh /data/local/tmp/toggle_input.sh'\""
+    ) > 0 && attempts < 20
+  )
+  {
+    attempts++;
+    usleep(100000);
+  }
+
+  attempts = 0;
+
+  while (
+    disconnect = system(
+      "adb disconnect"
+    ) > 0 && attempts < 20
+  )
+  {
+    attempts++;
+    usleep(100000);
+  }
+
+  if ((connect + input_toggle + disconnect) != 0)
+  {
+    return -1;
+  }
+
+  return 0;
+}
+
+
+int
+send_all(int socket, void *buffer, size_t length)
 {
     char *ptr = (char*) buffer;
     while (length > 0)
@@ -437,12 +377,7 @@ toggle_christmas_lights()
   struct sockaddr_in xmas_pi;
 
   // Create socket
-  sock = socket(
-    AF_INET,
-    SOCK_STREAM,
-    0
-  );
-
+  sock = socket(AF_INET, SOCK_STREAM, 0);
 
   if (sock == -1)
   {
@@ -467,13 +402,7 @@ toggle_christmas_lights()
   }
 
   // Send message to other pi
-  if (
-    send(
-      sock,
-      "4",
-      strlen("4"),
-      0
-    ) < 0)
+  if (send(sock, "4", strlen("4"), 0) < 0)
   {
     puts("Send failed");
     return 1;
@@ -481,10 +410,6 @@ toggle_christmas_lights()
 
   // Close socket
   close(sock);
-
-  // Clear memory
-  //free(sock);
-  //free(xmas_pi);
 
   return 0;
 }
