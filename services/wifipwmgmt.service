@@ -1,0 +1,10 @@
+[Unit]
+Description=Disable WIFI Power Management
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/home/pi/wifi_pw_mgmt.sh
+
+[Install]
+WantedBy=multi-user.target

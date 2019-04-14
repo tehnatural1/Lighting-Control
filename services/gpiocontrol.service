@@ -1,0 +1,11 @@
+[Unit]
+Description=GPIOControl
+After=multi-user.target
+
+[Service]
+Type=idle
+WorkingDirectory=/home/pi/Projects
+ExecStart=/home/pi/Projects/GPIOControl
+
+[Install]
+WantedBy=multi-user.target
