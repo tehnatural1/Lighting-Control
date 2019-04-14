@@ -48,8 +48,20 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements AsyncResponse
 {
 
-    private static final String OPEN_WEATHER_MAP_API = "GET_AN_API_KEY";
+    //private static final String OPEN_WEATHER_MAP_API = "GET_AN_API_KEY";
 
+    //<string name="open_weather_maps_app_id">d0bc738e827e70eec182282c3d0174e3</string>
+    private static final String OPEN_WEATHER_MAP_API =
+            "http://api.openweathermap.org/data/2.5/weather?q=%s&units=metric&APPID=%s";
+
+    private static final String OPEN_WEATHER_MAP_API_FORECAST =
+            "http://api.openweathermap.org/data/2.5/forecast?q=%s&units=metric&APPID=%s";
+
+    // https://api.darksky.net/forecast/bb73232d46fbab0a5e5cbe7cd027a04d/37.8267,-122.4233
+
+    // api.openweathermap.org/data/2.5/forecast/daily?q=Ottawa,ca&cnt=7&units=metric&APPID=d0bc738e827e70eec182282c3d0174e3
+
+    // http://api.openweathermap.org/data/2.5/forecast?q=Ottawa,ca&units=metric&APPID=d0bc738e827e70eec182282c3d0174e3
 
 
     IPScanner ipscanner;

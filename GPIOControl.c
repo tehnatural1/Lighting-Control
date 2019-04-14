@@ -385,7 +385,7 @@ toggle_christmas_lights()
     return 1;
   }
 
-  xmas_pi.sin_addr.s_addr = inet_addr("192.168.1.76");
+  xmas_pi.sin_addr.s_addr = inet_addr(XMAS_PI_ADDR);
   xmas_pi.sin_family = AF_INET;
   xmas_pi.sin_port = htons(MESSAGE_PORT);
 
@@ -402,7 +402,7 @@ toggle_christmas_lights()
   }
 
   // Send message to other pi
-  if (send(sock, "4", strlen("4"), 0) < 0)
+  if (send(sock, XMAS_PI_GPIO, strlen(XMAS_PI_GPIO), 0) < 0)
   {
     puts("Send failed");
     return 1;

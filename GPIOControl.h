@@ -28,6 +28,10 @@
 /* Port to accept communications on */
 #define MESSAGE_PORT 9090
 
+/* XMAS Pi lighting-server */
+#define XMAS_PI_ADDR   "192.168.1.76"
+#define XMAS_PI_GPIO   "4"
+
 
 int disable_tablet_input();
 int init();
