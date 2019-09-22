@@ -92,7 +92,7 @@
       "textsize": 24
     },
     {
-      "id": 100,
+      "id": "Tablet Input",
       "text": "Tablet Input",
       "description": "Tablet touch inputs are now disabled",
       "forecolor": "default",

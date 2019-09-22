@@ -48,7 +48,7 @@ int listen_for_connections()
     for(;;)
     {
         errno = 0;
-        printf("   Wait for an incoming connection to arrive\n");
+        printf("\n   Wait for an incoming connection to arrive\n");
 
 
         rc = accept(sd, NULL, NULL);
@@ -90,6 +90,9 @@ int handle_connection(int sd)
     recv (sd, msg, MAX_READ_SIZE, 0);
 
 
+    printf("    Message recieved as: %s", msg);
+
+
     /**/ if (is_number (msg))
     {
         toggle_gpio (atoi (msg));
@@ -97,7 +100,7 @@ int handle_connection(int sd)
     }
     else if (strcmp (msg, MSG_TABLET) == 0)
     {
-        msg_to(TABLET_IP, TABLET_PORT, TABLET_TOGGLE);
+        msg_to (TABLET_IP, TABLET_PORT, TABLET_TOGGLE);
         send (sd, MSG_ACK, strlen(MSG_ACK), 0);
     }
     else if (strcmp (msg, MSG_ALIVE_CHK) == 0)
@@ -111,7 +114,7 @@ int handle_connection(int sd)
 
         if (rc < 0)
         {
-            printf("    Unable to send button layout: %d", rc);
+            printf("    Unable to send button layout: %d\n", rc);
         }
     }
 

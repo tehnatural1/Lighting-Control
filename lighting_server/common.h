@@ -9,6 +9,3 @@
 
 
 char * button_layout;
-
-//int is_number(char * s);
-//int read_button_layout();
