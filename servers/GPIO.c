@@ -1,5 +1,4 @@
 #include "GPIO.h"
-#include "common.h"
 
 
 void setup_io()
