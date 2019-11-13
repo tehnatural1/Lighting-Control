@@ -63,8 +63,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse
 
     // http://api.openweathermap.org/data/2.5/forecast?q=Ottawa,ca&units=metric&APPID=d0bc738e827e70eec182282c3d0174e3
 
-
-    IPScanner ipscanner;
     Butter butter;
 
     TextView city_name;

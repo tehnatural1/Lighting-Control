@@ -1,5 +1,12 @@
 #include "connections.h"
 
+enum srverr
+{
+    SRV_ERROR_SOCK = -1,
+    SRV_ERROR_BIND = -2,
+    SRV_ERROR_LSTN = -3
+};
+
 
 int listen_for_connections(int port, int (*connection_handler)())
 {
@@ -12,7 +19,7 @@ int listen_for_connections(int port, int (*connection_handler)())
     if (sd == -1)
     {
         perror("    socket failed");
-        return(-1);
+        return(SRV_ERROR_SOCK);
     }
 
 
@@ -28,7 +35,7 @@ int listen_for_connections(int port, int (*connection_handler)())
     {
         perror("    bind failed");
         close(sd);
-        return(-2);
+        return(SRV_ERROR_BIND);
     }
 
 
@@ -37,7 +44,7 @@ int listen_for_connections(int port, int (*connection_handler)())
     {
         perror("    listen failed");
         close(sd);
-        return(-3);
+        return(SRV_ERROR_LSTN);
     }
 
 

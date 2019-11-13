@@ -19,6 +19,8 @@
     <string name="weather_low">&#xf053;</string>
     <string name="weather_high">&#xf055;</string>
 
+    <string name="open_weather_maps_app_id">d0bc738e827e70eec182282c3d0174e3</string>
+
     <string name="place_not_found">No weather data found.</string>
     <string name="title_activity_weather_fragment">WeatherFragment</string>
 </resources>
