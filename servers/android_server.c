@@ -1,17 +1,31 @@
 #include "network/serv.c"
+#include "common.c"
+#include <pthread.h>
+#include <sys/reboot.h>
 
 
 #define SRV_PORT 18000
 #define MSG_RESP "done"
+#define TABLET_SCREEN_TIME "/sys/devices/13800000.decon_fb/power/runtime_active_time"
 
 
 void toggle_touch_controls(void);
+void * monitor_screen_state(void * vargp);
 int set_file_content(char * fp);
 int connection_handler(int sd);
 
 
 int main(int argc, char **argv)
 {
+    pthread_t t;
+    int rc;
+
+    rc = pthread_create(&t, NULL, monitor_screen_state, NULL);
+    if (rc < 0)
+    {
+        printf("    Unable to monitor screen state");
+    }
+
     listen_for_connections(SRV_PORT, connection_handler);
 }
 
@@ -20,6 +34,35 @@ int connection_handler(int sd)
 {
     toggle_touch_controls();
     send (sd, MSG_RESP, strlen(MSG_RESP), 0);
+    return (0);
+}
+
+
+void * monitor_screen_state(void * vargp)
+{
+    char * last_runtime = get_file_content(TABLET_SCREEN_TIME, "r");
+    char * this_runtime;
+
+
+    printf("    Monitoring screen power state");
+    while (1)
+    {
+        sleep(180);
+
+        this_runtime = get_file_content(TABLET_SCREEN_TIME, "r");
+
+        if (strcmp (this_runtime, last_runtime) == 0)
+        {
+            printf ("   No screen activity for 1 minute, shutting down...\n");
+            sync();
+            reboot(LINUX_REBOOT_CMD_POWER_OFF);
+        }
+        else
+        {
+            free(last_runtime);
+            last_runtime = this_runtime;
+        }
+    }
 }
 
 

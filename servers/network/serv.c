@@ -13,7 +13,7 @@ int listen_for_connections(int port, int (*connection_handler)())
     struct sockaddr_in addr;
     struct timeval tv;
     int sd, rc;
-    
+
 
     sd = socket (AF_INET, SOCK_STREAM, 0);
     if (sd == -1)
